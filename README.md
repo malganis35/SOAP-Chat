@@ -2,7 +2,7 @@
 
 The **Medical SOAP Note Generator** is an AI-powered clinical tool built with Streamlit. It transforms unstructured medical consultation notes into standardized **SOAP** (Subjective, Objective, Assessment, and Plan) notes. By leveraging the Groq API and the `llama-3.3-70b-versatile` model, the application ensures high-quality, specialty-specific medical documentation.
 
-![image](docs/soap_chat.png)
+![image](docs/soap_chat.gif)
 
 
 ---
