@@ -35,6 +35,18 @@ def create_docx(text):
 
 # --- SIDEBAR ---
 with st.sidebar:
+    
+    # Logo EM Lyon (Lien vers une image officielle ou locale)
+    st.markdown(
+        """
+        <div style="display: flex; justify-content: center;">
+            <img src="https://keystoneacademic-res.cloudinary.com/image/upload/c_pad,w_3840,h_1280/dpr_auto/f_auto/q_auto/v1/element/17/174471_emlyon_logo.png" width="600">
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    
     st.title("⚙️ Configuration")
     st.markdown("""
     **Medical SOAP Generator**
