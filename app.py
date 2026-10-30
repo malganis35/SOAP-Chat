@@ -33,6 +33,30 @@ def create_docx(text):
     doc.save(bio)
     return bio.getvalue()
 
+# --- HELPER FUNCTION: LIST GROQ MODELS ---
+FALLBACK_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
+NON_CHAT_KEYWORDS = ("whisper", "guard", "tts", "playai", "orpheus", "embed")
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def fetch_chat_models(api_key):
+    """Return the chat models currently available on Groq, or [] on failure."""
+    try:
+        models = Groq(api_key=api_key).models.list().data
+    except Exception:
+        return []
+    return sorted(
+        m.id for m in models
+        if getattr(m, "active", True) and not any(k in m.id.lower() for k in NON_CHAT_KEYWORDS)
+    )
+
+def pick_default_model(models):
+    """Prefer a llama 70b model, then any llama model, then the first one."""
+    for predicate in (lambda m: "llama" in m and "70b" in m, lambda m: "llama" in m):
+        for m in models:
+            if predicate(m.lower()):
+                return m
+    return models[0]
+
 # --- SIDEBAR ---
 with st.sidebar:
     
@@ -56,6 +80,16 @@ with st.sidebar:
     
     api_key_input = st.text_input("Enter your Groq API Token:", type="password")
     
+    available_models = fetch_chat_models(api_key_input) if api_key_input else []
+    if api_key_input and not available_models:
+        st.caption("⚠️ Could not fetch the Groq model list, using fallback models.")
+    model_options = available_models or FALLBACK_MODELS
+    selected_model = st.selectbox(
+        "Choose Model:",
+        model_options,
+        index=model_options.index(pick_default_model(model_options)),
+    )
+
     if not PROMPT_STYLES:
         st.warning("No prompts found in the 'prompts/' folder.")
         selected_style = None
@@ -123,7 +157,7 @@ if st.button("Generate SOAP Note", type="primary"):
                 full_response = ""
                 
                 completion = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
+                    model=selected_model,
                     messages=full_messages,
                     temperature=0.3,
                     max_tokens=2048,
